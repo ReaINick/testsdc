@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy Countdown Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+            transition: all 0.3s ease;
+        }
+
+        .controls {
+            margin: 30px 0;
+            transition: all 0.3s ease;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .time-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px 15px;
+            color: white;
+            font-size: 1.1rem;
+            width: 80px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .time-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.start {
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+        }
+
+        .button.stop {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+        }
+
+        .button.reset {
+            background: linear-gradient(45deg, #a8edea, #fed6e3);
+        }
+
+        .button.presentation {
+            background: linear-gradient(45deg, #d299c2, #fef9d7);
+            margin-top: 20px;
+        }
+
+        .presentation-mode .controls {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-20px);
+        }
+
+        .presentation-mode .container {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .presentation-mode .timer-display {
+            font-size: 8rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.5;
+            }
+        }
+
+        .explosion {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .explosion-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff, #ff6b6b);
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 2s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { 
+                opacity: 1; 
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% { 
+                opacity: 0; 
+                transform: scale(0.8);
+            }
+        }
+
+        .warning {
+            color: #ff6b6b !important;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        .title {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .timer-display {
+                font-size: 2.5rem;
+            }
+            
+            .presentation-mode .timer-display {
+                font-size: 4rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .time-input {
+                width: 120px;
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container" id="container">
+        <div class="title">Fancy Timer</div>
+        
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        
+        <div class="controls" id="controls">
+            <div class="input-group">
+                <div>
+                    <input type="number" class="time-input" id="hours" placeholder="0" min="0" max="23">
+                    <div class="label">Hours</div>
+                </div>
+                <div>
+                    <input type="number" class="time-input" id="minutes" placeholder="5" min="0" max="59">
+                    <div class="label">Minutes</div>
+                </div>
+                <div>
+                    <input type="number" class="time-input" id="seconds" placeholder="0" min="0" max="59">
+                    <div class="label">Seconds</div>
+                </div>
+            </div>
+            
+            <div>
+                <button class="button start" onclick="startTimer()">Start</button>
+                <button class="button stop" onclick="stopTimer()">Pause</button>
+                <button class="button reset" onclick="resetTimer()">Reset</button>
+            </div>
+            
+            <button class="button presentation" onclick="togglePresentationMode()">Presentation Mode</button>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let totalSeconds = 0;
+        let isRunning = false;
+        let isPresentationMode = false;
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Format time display
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update timer display
+        function updateDisplay() {
+            const display = document.getElementById('timerDisplay');
+            display.textContent = formatTime(totalSeconds);
+            
+            // Add warning effect when time is low
+            if (totalSeconds <= 10 && totalSeconds > 0) {
+                display.classList.add('warning');
+            } else {
+                display.classList.remove('warning');
+            }
+        }
+
+        // Start timer
+        function startTimer() {
+            if (!isRunning) {
+                if (totalSeconds === 0) {
+                    setTimeFromInputs();
+                }
+                
+                if (totalSeconds > 0) {
+                    isRunning = true;
+                    timerInterval = setInterval(() => {
+                        totalSeconds--;
+                        updateDisplay();
+                        
+                        if (totalSeconds <= 0) {
+                            stopTimer();
+                            triggerCompletion();
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        // Stop timer
+        function stopTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+        }
+
+        // Reset timer
+        function resetTimer() {
+            stopTimer();
+            totalSeconds = 0;
+            updateDisplay();
+            document.getElementById('timerDisplay').classList.remove('warning');
+        }
+
+        // Set time from input fields
+        function setTimeFromInputs() {
+            const hours = parseInt(document.getElementById('hours').value) || 0;
+            const minutes = parseInt(document.getElementById('minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('seconds').value) || 0;
+            
+            totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+            updateDisplay();
+        }
+
+        // Toggle presentation mode
+        function togglePresentationMode() {
+            isPresentationMode = !isPresentationMode;
+            const container = document.getElementById('container');
+            
+            if (isPresentationMode) {
+                container.classList.add('presentation-mode');
+            } else {
+                container.classList.remove('presentation-mode');
+            }
+        }
+
+        // Create explosion effect
+        function createExplosion() {
+            const container = document.getElementById('container');
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            container.appendChild(explosion);
+
+            // Create explosion particles
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle';
+                
+                const angle = (i / 20) * Math.PI * 2;
+                const distance = 100 + Math.random() * 100;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                particle.style.animation = `explode 1.5s ease-out forwards`;
+                particle.style.animationDelay = Math.random() * 0.3 + 's';
+                
+                explosion.appendChild(particle);
+            }
+
+            // Clean up explosion after animation
+            setTimeout(() => {
+                container.removeChild(explosion);
+            }, 2000);
+        }
+
+        // Trigger completion animation
+        function triggerCompletion() {
+            createExplosion();
+            
+            setTimeout(() => {
+                const container = document.getElementById('container');
+                container.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    container.classList.remove('fade-out');
+                    resetTimer();
+                }, 2000);
+            }, 500);
+        }
+
+        // Handle keyboard events
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isRunning) {
+                    stopTimer();
+                } else {
+                    startTimer();
+                }
+            } else if (e.key === 'r' || e.key === 'R') {
+                resetTimer();
+            } else if (e.key === 'p' || e.key === 'P') {
+                togglePresentationMode();
+            }
+        });
+
+        // Auto-update when input values change
+        document.getElementById('hours').addEventListener('input', setTimeFromInputs);
+        document.getElementById('minutes').addEventListener('input', setTimeFromInputs);
+        document.getElementById('seconds').addEventListener('input', setTimeFromInputs);
+
+        // Initialize
+        createParticles();
+        document.getElementById('minutes').value = '5';
+        setTimeFromInputs();
+    </script>
+</body>
+</html>
